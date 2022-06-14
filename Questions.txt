@@ -1,0 +1,2 @@
+- What does it log, log transaction (filewrite at file.c).
+- different between dinode to inode
