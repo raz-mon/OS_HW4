@@ -7,14 +7,14 @@ main(int argc, char *argv[])
 {
   // sanity();
 
-  int buf1[1024 * 12];
-  memset(buf1, 50, 1024 * 12);
+  char buf1[1024 * 12];
+  memset(buf1, 50, strlen(buf1));
 
-  int buf2[1024 * 256];
-  memset(buf2, 50, 1024 * 256);
+  char buf2[1024 * 256];
+  memset(buf2, 50, strlen(buf2));
 
-  int buf3[1024 * 256 * 256];
-  memset(buf3, 50, 1024 * 256 * 256);
+  char buf3[1024 * 256 * 256];
+  memset(buf3, 50, strlen(buf3));
 
   int fd = open("sanity_test_file", 1);
   write(fd, buf1, 1024 * 12);
