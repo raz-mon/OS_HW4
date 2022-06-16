@@ -1,7 +1,26 @@
-- What does it log, log transaction (filewrite at file.c).
-- different between dinode to inode
-- how do we need to pad inode and dinode
+Questions:
+    - What does it log, log transaction (filewrite at file.c).
+    - difference between dinode to inode.
+    - Should we add padding to the inode (not only the dinode)? And, did we pad correctly?
+    - What is the difference between 'ref' and 'nlink' in 'struct inode'?
+    - In mkfs.c - do we need to change anything else, other than the size (FSSIZE)?
+    - It looks like 'balloc' doesn't respect the file-system order - since it just looks for a free block.. What about the purpose of that block?
 
 
 Todo:
-- Change bmap in fs.c to deal with double indirection link.
+    - Section 1:
+        - Write 'sanity-test' as written in the assignment.
+    
+    - Section 2:
+        - ...
+
+
+Notes:
+    - Changes we made for section 1 of the assignment (make sure this is enough, and implemented well):
+        - fs.h: Added another Indirect (doubly) entry in addresses of the dinode struct, and padding.
+        - file.h: Added another indirect (double) entry in addresses, with no padding.
+        - fs.c: Added functionality of finding (and\or allocating) the nth block of a file in the disk for the doubly-indirect block.
+        - param.h: Changed FSSIZE to 2^17=131072 instead of 1000 (blocks).
+    
+    - Changes we made for section 2 of the assignment:
+        - 

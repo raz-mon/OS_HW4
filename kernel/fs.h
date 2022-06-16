@@ -25,9 +25,10 @@ struct superblock {
 #define FSMAGIC 0x10203040
 
 #define NDIRECT 12
+// #define MAXFILE (NDIRECT + NINDIRECT)
 // Added
 #define PADDING 15
-#define NINDIRECT (BSIZE / sizeof(uint))
+#define NINDIRECT (BSIZE / sizeof(uint))              // NINDIRECT = 1024 / 4 = 256
 #define DOUBLE_NINDIRECT (NINDIRECT * NINDIRECT)
 #define MAXFILE (NDIRECT + NINDIRECT + DOUBLE_NINDIRECT)
 

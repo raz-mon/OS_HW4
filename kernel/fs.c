@@ -370,7 +370,7 @@ iunlockput(struct inode *ip)
 // The content (data) associated with each inode is stored
 // in blocks on the disk. The first NDIRECT block numbers
 // are listed in ip->addrs[].  The next NINDIRECT blocks are
-// listed in block ip->addrs[NDIRECT].
+// listed in block ip->addrs[NDIRECT] (added: and in ip->addres[NDIRECT+1]).
 
 // Return the disk block address of the nth block in inode ip.
 // If there is no such block, bmap allocates one.
@@ -412,7 +412,7 @@ bmap(struct inode *ip, uint bn)
     a = (uint*)bp->data;
 
    // load 2nd layer block.
-    uint double_index = bn / NINDIRECT;
+    uint double_index = bn / NINDIRECT;                 // Floor integer division. Get the index of the wanted block in the second blocks-table.
     if((addr = a[double_index]) == 0){
       a[double_index] = addr = balloc(ip->dev);
       log_write(bp);
@@ -422,7 +422,7 @@ bmap(struct inode *ip, uint bn)
     // now find disk block.
     bp = bread(ip->dev, addr);
     a = (uint*)bp->data;
-    uint pos = bn % NINDIRECT;
+    uint pos = bn % NINDIRECT;              // We already know that the wanted block is in this indirect block. Only need the offset=pos.
     if ((addr = a[pos]) == 0) {
       a[pos] = addr = balloc(ip->dev);
       log_write(bp);

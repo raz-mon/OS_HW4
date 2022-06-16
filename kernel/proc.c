@@ -596,6 +596,13 @@ kill(int pid)
   return -1;
 }
 
+// Memory sanity-test.
+void
+sanity_test(void)
+{
+  printf("TBD..\n");
+}
+
 // Copy to either a user address, or kernel address,
 // depending on usr_dst.
 // Returns 0 on success, -1 on error.
