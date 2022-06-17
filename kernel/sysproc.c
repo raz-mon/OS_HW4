@@ -96,10 +96,3 @@ sys_uptime(void)
   return xticks;
 }
 
-// Perform memory sanity test.
-uint64
-sys_sanity(void)
-{
-  sanity_test();
-  return 1;
-}

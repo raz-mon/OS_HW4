@@ -21,6 +21,10 @@ Notes:
         - file.h: Added another indirect (double) entry in addresses, with no padding.
         - fs.c: Added functionality of finding (and\or allocating) the nth block of a file in the disk for the doubly-indirect block.
         - param.h: Changed FSSIZE to 2^17=131072 instead of 1000 (blocks).
+        - Added the system call "sanity_check" - although don't need to - this can be deleted.
+        - Added the user program "sanity", which performs the sanity check wanted in the assignment.
     
     - Changes we made for section 2 of the assignment:
+        - Added an enumeration for SYMLINK file type in stat.h.
+        - Added the system calls 'symlink' and 'readlink' as described in the assingment.
         - 
