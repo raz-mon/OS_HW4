@@ -42,7 +42,6 @@ main(int argc, char *argv[])
   }
   fprintf(1, "Finished writing another 10MB to the doubly indirect blocks\n");
   
-  
   close(fd);
   exit(0);
 }

@@ -165,6 +165,40 @@ bad:
   return -1;
 }
 
+// Add a new symbolic link
+uint64
+sys_symlink(void)
+{
+  // Actual signiture: int symlink (const char ∗oldpath , const char ∗newpath)
+
+  // Get arguments.
+
+  // Create file with path 'newpath'
+
+  // Insert 'oldpath' to be the file content.
+
+  // return 0 on success, -1 on failure.
+
+  return 0;
+}
+
+// Read the content of a symbolic link to a buffer
+uint64
+sys_readlink(void)
+{
+  // Actual signiture: 
+
+  // Read system-call arguments.
+
+  // Make sure file exists, and is a symbolic link, and that the size of its contents is <= buf_size.
+
+  // Read file content into buffer.
+
+  // return 0 on success, -1 on failure.  
+
+  return 0;
+}
+
 // Is the directory dp empty except for "." and ".." ?
 static int
 isdirempty(struct inode *dp)
