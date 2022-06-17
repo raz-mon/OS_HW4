@@ -6,8 +6,6 @@
 int
 main(int argc, char *argv[])
 {
-
-
   char buf[1024];
   int fd, i, blocks;
   fd = open("big.file", O_CREATE | O_RDWR);
