@@ -8,9 +8,6 @@ Questions:
 
 
 Todo:
-    - Section 1:
-        - Write 'sanity-test' as written in the assignment.
-    
     - Section 2:
         - ...
 
@@ -19,12 +16,24 @@ Notes:
     - Changes we made for section 1 of the assignment (make sure this is enough, and implemented well):
         - fs.h: Added another Indirect (doubly) entry in addresses of the dinode struct, and padding.
         - file.h: Added another indirect (double) entry in addresses, with no padding.
-        - fs.c: Added functionality of finding (and\or allocating) the nth block of a file in the disk for the doubly-indirect block.
+        - fs.c (bmap): Added functionality of finding (and\or allocating) the nth block of a file in the disk for the doubly-indirect block.
         - param.h: Changed FSSIZE to 2^17=131072 instead of 1000 (blocks).
+        - fs.c (itrunc): Added freeing of doubly indirect blocks in 'itrunc' method.
         - Added the system call "sanity_check" - although don't need to - this can be deleted.
         - Added the user program "sanity", which performs the sanity check wanted in the assignment.
     
     - Changes we made for section 2 of the assignment:
         - Added an enumeration for SYMLINK file type in stat.h.
         - Added the system calls 'symlink' and 'readlink' as described in the assingment.
-        - 
+            ** POSSIBLE PROBLEM: I didn't save the path size (as some references does). I assigned MAXPATH to n (in readi), hoping that 
+            if we meet EOF before n, readi just returns. If this is not the case --> Add the length of the path to the data-blocks of the file.
+        - Change chdir, exec, open (and fstat and unlink?) to work with soft (symbolic) links:
+            - open: 
+                - (fcntl.h) Add a new flag O_NOFOLLOW in fcntl.h so that we don't follow the symbolic link (good for 'fstat', 'link', 'unlink' etc. 
+                because we don't want to get the file descriptor of the file the symlink points at, but rather the fd of the symlink file itself).
+                - (open) 
+            - chdir: 
+
+            - exec: 
+            
+
