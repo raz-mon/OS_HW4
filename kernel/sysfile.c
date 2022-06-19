@@ -184,7 +184,7 @@ sys_symlink(void)
 
   // It's ok to create a symlink to a file that doesn't exist, 
   // but we can't make a new file with the same path of an existing one.
-  if ((ip_new = namei(newpath)) != 0){
+  if ((ip_new = namei2(newpath)) != 0){
     end_op();
     return -1;
   }
@@ -220,7 +220,7 @@ sys_readlink(void)
     return -1;
 
   // Make sure file exists, and is a symbolic link, and that the size of its contents is <= buf_size.
-  if ((ip = namei(pathname)) == 0 || ip->type != T_SYMLINK || ip->size > sizeof(buf))
+  if ((ip = namei2(pathname)) == 0 || ip->type != T_SYMLINK || ip->size > sizeof(buf))
     return -1;
 
   // Read file content into buffer.
@@ -371,6 +371,75 @@ sys_open(void)
     }
   } else {
     if((ip = namei(path)) == 0){
+      end_op();
+      return -1;
+    }
+    ilock(ip);
+    if(ip->type == T_DIR && omode != O_RDONLY){
+      iunlockput(ip);
+      end_op();
+      return -1;
+    }
+  }
+
+  if(ip->type == T_DEVICE && (ip->major < 0 || ip->major >= NDEV)){
+    iunlockput(ip);
+    end_op();
+    return -1;
+  }
+
+  if((f = filealloc()) == 0 || (fd = fdalloc(f)) < 0){
+    if(f)
+      fileclose(f);
+    iunlockput(ip);
+    end_op();
+    return -1;
+  }
+
+  if(ip->type == T_DEVICE){
+    f->type = FD_DEVICE;
+    f->major = ip->major;
+  } else {
+    f->type = FD_INODE;
+    f->off = 0;
+  }
+  f->ip = ip;
+  f->readable = !(omode & O_WRONLY);
+  f->writable = (omode & O_WRONLY) || (omode & O_RDWR);
+
+  if((omode & O_TRUNC) && ip->type == T_FILE){
+    itrunc(ip);
+  }
+
+  iunlock(ip);
+  end_op();
+
+  return fd;
+}
+
+// Like sys_open, but does not dereference symlink files.
+uint64
+sys_open_no_dereference(void)
+{
+  char path[MAXPATH];
+  int fd, omode;
+  struct file *f;
+  struct inode *ip;
+  int n;
+
+  if((n = argstr(0, path, MAXPATH)) < 0 || argint(1, &omode) < 0)
+    return -1;
+
+  begin_op();
+
+  if(omode & O_CREATE){
+    ip = create(path, T_FILE, 0, 0);
+    if(ip == 0){
+      end_op();
+      return -1;
+    }
+  } else {
+    if((ip = namei2(path)) == 0){
       end_op();
       return -1;
     }

@@ -3,6 +3,8 @@
 #include "user/user.h"
 #include "kernel/fs.h"
 
+#define MAXPATH 128
+
 char*
 fmtname(char *path)
 {
@@ -29,8 +31,10 @@ ls(char *path)
   int fd;
   struct dirent de;
   struct stat st;
+  char new_path[MAXPATH];
 
-  if((fd = open(path, 0)) < 0){
+  // Added: Make sure that here no dereference occurs! Can use different system-call or the O_UNFOLLOW flag.
+  if((fd = open_no_dereference(path, 0)) < 0){
     fprintf(2, "ls: cannot open %s\n", path);
     return;
   }
@@ -42,6 +46,13 @@ ls(char *path)
   }
 
   switch(st.type){
+  // Added:
+  case T_SYMLINK:
+    if (readlink(path, new_path, MAXPATH) < 0)
+      printf("ls: bad symlink\n");
+    printf("%s->%s %d %d %l\n", fmtname(path), new_path, st.type, st.ino, st.size);
+  // End of addition.
+
   case T_FILE:
     printf("%s %d %d %l\n", fmtname(path), st.type, st.ino, st.size);
     break;
@@ -63,6 +74,13 @@ ls(char *path)
         printf("ls: cannot stat %s\n", buf);
         continue;
       }
+      // Add here:
+      if (st.type==T_SYMLINK){
+        if (readlink(path, new_path, MAXPATH) < 0)
+          printf("ls: readlink\n");
+        printf("%s->%s %d %d %d\n", fmtname(buf), new_path, st.type, st.ino, st.size);
+      }
+      else
       printf("%s %d %d %d\n", fmtname(buf), st.type, st.ino, st.size);
     }
     break;
