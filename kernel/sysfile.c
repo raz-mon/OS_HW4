@@ -165,6 +165,8 @@ bad:
   return -1;
 }
 
+static struct inode* create(char *path, short type, short major, short minor);
+
 // Add a new symbolic link
 uint64
 sys_symlink(void)
@@ -172,13 +174,33 @@ sys_symlink(void)
   // Actual signiture: int symlink (const char ∗oldpath , const char ∗newpath)
 
   // Get arguments.
+  char oldpath[MAXPATH], newpath[MAXPATH];
+  struct inode *ip_new;
+  if (argstr(0, oldpath, MAXPATH) < 0 || argstr(1, newpath, MAXPATH) < 0)
+    return -1;
 
-  // Create file with path 'newpath'
+  // Create file with path 'newpath', in the right directory
+  begin_op();
 
+  // It's ok to create a symlink to a file that doesn't exist, 
+  // but we can't make a new file with the same path of an existing one.
+  if ((ip_new = namei(newpath)) != 0){
+    end_op();
+    return -1;
+  }
+
+  ip_new = create(newpath, T_SYMLINK, 0, 0);
+  if (ip_new == 0){
+    end_op();
+    return -1;
+  }
+
+  ilock(ip_new);
   // Insert 'oldpath' to be the file content.
-
-  // return 0 on success, -1 on failure.
-
+  if (writei(ip_new, 0, (uint64)oldpath, 0, sizeof(oldpath)) != sizeof(oldpath))
+    panic("symlink: writei");
+  iupdate(ip_new);
+  iunlockput(ip_new);
   return 0;
 }
 
@@ -187,14 +209,24 @@ uint64
 sys_readlink(void)
 {
   // Actual signiture: 
+  // int read link (const char ∗pathname , char ∗buf, int bufsize)
 
   // Read system-call arguments.
+  char pathname[MAXPATH];
+  uint64 buf;
+  int bufsize;
+  struct inode *ip;
+  if (argstr(0, pathname, MAXPATH) < 0 || argaddr(1, &buf) < 0 || argint(2, &bufsize) < 0)
+    return -1;
 
   // Make sure file exists, and is a symbolic link, and that the size of its contents is <= buf_size.
+  if ((ip = namei(pathname)) == 0 || ip->type != T_SYMLINK || ip->size > sizeof(buf))
+    return -1;
 
   // Read file content into buffer.
-
-  // return 0 on success, -1 on failure.  
+  if (readi(ip, 0, buf, 0, MAXPATH) < 0)
+    // panic("readlink: readi");
+    return -1;
 
   return 0;
 }
