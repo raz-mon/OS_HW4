@@ -195,12 +195,14 @@ sys_symlink(void)
     return -1;
   }
 
-  ilock(ip_new);
+  // ilock(ip_new);   // Create already locks ip!!
   // Insert 'oldpath' to be the file content.
-  if (writei(ip_new, 0, (uint64)oldpath, 0, sizeof(oldpath)) != sizeof(oldpath))
+  if (writei(ip_new, 0, (uint64)oldpath, 0, strlen(oldpath)) != strlen(oldpath))
     panic("symlink: writei");
   iupdate(ip_new);
-  iunlockput(ip_new);
+  // iunlockput(ip_new);
+  iunlock(ip_new);
+  end_op();
   return 0;
 }
 
@@ -218,16 +220,23 @@ sys_readlink(void)
   struct inode *ip;
   if (argstr(0, pathname, MAXPATH) < 0 || argaddr(1, &buf) < 0 || argint(2, &bufsize) < 0)
     return -1;
+  
+  begin_op();
 
   // Make sure file exists, and is a symbolic link, and that the size of its contents is <= buf_size.
-  if ((ip = namei2(pathname)) == 0 || ip->type != T_SYMLINK || ip->size > sizeof(buf))
+  if ((ip = namei2(pathname)) == 0 || ip->type != T_SYMLINK || ip->size > sizeof(buf)){
+    end_op();
     return -1;
+  }
 
   // Read file content into buffer.
-  if (readi(ip, 0, buf, 0, MAXPATH) < 0)
+  if (readi(ip, 1, buf, 0, MAXPATH) < 0){
+    end_op();
     // panic("readlink: readi");
     return -1;
+  }
 
+  end_op();
   return 0;
 }
 

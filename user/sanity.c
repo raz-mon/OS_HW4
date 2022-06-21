@@ -48,17 +48,14 @@ main(int argc, char *argv[])
 
 
 
-
-
-
-
-
-
-
-
-
-
-
+/*
+// Check chdir new functionality:
+Mkdir dir1
+Mkdir /dir1/dir2
+Ln -s dir1 dir1_lnk
+Cd dir1_lnk
+Cd dir2
+*/
 
 
 
