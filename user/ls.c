@@ -31,7 +31,7 @@ ls(char *path)
   int fd;
   struct dirent de;
   struct stat st;
-  // char new_path[MAXPATH];
+  char new_path[MAXPATH];
 
   // Added: Make sure that here no dereference occurs! Can use different system-call or the O_UNFOLLOW flag.
   if((fd = open_no_dereference(path, 0)) < 0){
@@ -47,14 +47,11 @@ ls(char *path)
 
   switch(st.type){
   // Added:
-  // Need to get the inode number from the de (directory entry (which holds the file name and inode number)) --> and then open the file,
-  // and read its contents with 'readlink'.
-
-  // case T_SYMLINK:
-  //   if (readlink(path, new_path, MAXPATH) < 0)       // This is wrong! 'path' is the path of the father directory.
-  //     printf("ls: bad symlink\n");
-  //   printf("%s->%s %d %d %l\n", fmtname(path), new_path, st.type, st.ino, st.size);
-  //   break;
+  case T_SYMLINK:
+    if (readlink(path, new_path, MAXPATH) < 0)       // This is wrong! 'path' is the path of the father directory.
+      printf("ls: bad symlink\n");
+    printf("%s->%s %d %d %l\n", fmtname(path), new_path, st.type, st.ino, st.size);
+    break;
   // End of addition.
 
   case T_FILE:
@@ -79,15 +76,12 @@ ls(char *path)
         continue;
       }
       // Add here:
-      // Need to get the inode number from the de (directory entry (which holds the file name and inode number)) --> and then open the file,
-      // and read its contents with 'readlink'.
-
-      // if (st.type==T_SYMLINK){
-      //   if (readlink(path, new_path, MAXPATH) < 0)       // This is wrong!! 'path' is the path of the father!
-      //     printf("ls: readlink\n");
-      //   printf("%s->%s %d %d %d\n", fmtname(buf), new_path, st.type, st.ino, st.size);
-      // }
-      // else
+      if (st.type==T_SYMLINK){
+        if (readlink(buf, new_path, MAXPATH) < 0)       // This is wrong!! 'path' is the path of the father!
+          printf("ls: readlink\n");
+        printf("%s->%s %d %d %d\n", fmtname(buf), new_path, st.type, st.ino, st.size);
+      }
+      else
       printf("%s %d %d %d\n", fmtname(buf), st.type, st.ino, st.size);
     }
     break;
