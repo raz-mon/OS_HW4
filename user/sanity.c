@@ -11,13 +11,8 @@
  
 #define fail(msg) do {printf("FAILURE: " msg "\n"); failed = 1; goto done;} while (0);
 
+int check_big_fs(void);
 
-
-
-#include "kernel/types.h"
-#include "kernel/stat.h"
-#include "user/user.h"
-#include "kernel/fcntl.h"
 
 int
 main(int argc, char *argv[])
