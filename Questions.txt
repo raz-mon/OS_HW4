@@ -7,7 +7,9 @@ Questions:
 
 Todo:
     - Section 2:
-        - Make sure chdir works fine. Wierdly, cant call methods like 'ls' inside it.
+        - Fix 'namex'!! Should we do the dereferencing inside the while loop in case the symlink is 
+          of a directory?? I mean, this makes sense and also doesn't make sense.. 
+        - Check all functionalities of the functions mentioned in the assignment.
 
 
 Notes:

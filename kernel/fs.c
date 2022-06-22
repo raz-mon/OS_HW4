@@ -145,12 +145,12 @@ bfree(int dev, uint b)
 //   the information in an inode and its content if it
 //   has first locked the inode.
 //
-// Thus a typical sequence is:
-//   ip = iget(dev, inum)
-//   ilock(ip)
-//   ... examine and modify ip->xxx ...
-//   iunlock(ip)
-//   iput(ip)
+  // Thus a typical sequence is:
+  //   ip = iget(dev, inum)
+  //   ilock(ip)
+  //   ... examine and modify ip->xxx ...
+  //   iunlock(ip)
+  //   iput(ip)
 //
 // ilock() is separate from iget() so that system calls can
 // get a long-term reference to an inode (as for an open file)
