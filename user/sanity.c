@@ -12,13 +12,13 @@
 #define fail(msg) do {printf("FAILURE: " msg "\n"); failed = 1; goto done;} while (0);
 
 int check_big_fs(void);
-
+int main_symlink(void);
 
 int
 main(int argc, char *argv[])
 {
-  check_big_fs();
-  // main_symlink();
+  // check_big_fs();
+  main_symlink();
   exit(0);
 }
 

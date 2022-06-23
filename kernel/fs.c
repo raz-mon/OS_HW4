@@ -22,7 +22,7 @@
 #include "file.h"
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
-#define MAX_DEREFERENCE 31
+#define MAX_DEREFERENCE 10
 // there should be one superblock per disk device, but we run with
 // only one device
 struct superblock sb; 
@@ -711,6 +711,7 @@ namex(char *path, int nameiparent, char *name, int follow, int count)
   if (!follow || !(ip->type == T_SYMLINK))
     return ip;
   // Check if ip is of type T_SYMLINK. If so --> Dereference (follow) if count < MAX_DEREFERENCE.
+  // printf("count: %d\n", count);
   if (count >= MAX_DEREFERENCE)
     return 0;
   char path2[MAXPATH];

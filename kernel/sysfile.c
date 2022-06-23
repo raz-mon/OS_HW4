@@ -176,6 +176,7 @@ sys_symlink(void)
   // Get arguments.
   char oldpath[MAXPATH], newpath[MAXPATH];
   struct inode *ip_new;
+  memset(oldpath, 0, sizeof(oldpath));
   if (argstr(0, oldpath, MAXPATH) < 0 || argstr(1, newpath, MAXPATH) < 0)
     return -1;
 
@@ -195,13 +196,11 @@ sys_symlink(void)
     return -1;
   }
 
-  // ilock(ip_new);   // Create already locks ip!!
   // Insert 'oldpath' to be the file content.
   if (writei(ip_new, 0, (uint64)oldpath, 0, strlen(oldpath)) != strlen(oldpath))
     panic("symlink: writei");
-  iupdate(ip_new);
-  // iunlockput(ip_new);
-  iunlock(ip_new);
+
+  iunlockput(ip_new);
   end_op();
   return 0;
 }
