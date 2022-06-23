@@ -176,6 +176,7 @@ sys_symlink(void)
   // Get arguments.
   char oldpath[MAXPATH], newpath[MAXPATH];
   struct inode *ip_new;
+  memset(oldpath, 0, sizeof(oldpath));
   if (argstr(0, oldpath, MAXPATH) < 0 || argstr(1, newpath, MAXPATH) < 0)
     return -1;
 
@@ -184,7 +185,7 @@ sys_symlink(void)
 
   // It's ok to create a symlink to a file that doesn't exist, 
   // but we can't make a new file with the same path of an existing one.
-  if ((ip_new = namei(newpath)) != 0){
+  if ((ip_new = namei2(newpath)) != 0){
     end_op();
     return -1;
   }
@@ -195,12 +196,12 @@ sys_symlink(void)
     return -1;
   }
 
-  ilock(ip_new);
   // Insert 'oldpath' to be the file content.
-  if (writei(ip_new, 0, (uint64)oldpath, 0, sizeof(oldpath)) != sizeof(oldpath))
+  if (writei(ip_new, 0, (uint64)oldpath, 0, strlen(oldpath)) != strlen(oldpath))
     panic("symlink: writei");
-  iupdate(ip_new);
+
   iunlockput(ip_new);
+  end_op();
   return 0;
 }
 
@@ -218,16 +219,23 @@ sys_readlink(void)
   struct inode *ip;
   if (argstr(0, pathname, MAXPATH) < 0 || argaddr(1, &buf) < 0 || argint(2, &bufsize) < 0)
     return -1;
+  
+  begin_op();
 
   // Make sure file exists, and is a symbolic link, and that the size of its contents is <= buf_size.
-  if ((ip = namei(pathname)) == 0 || ip->type != T_SYMLINK || ip->size > sizeof(buf))
+  if ((ip = namei2(pathname)) == 0 || ip->type != T_SYMLINK || ip->size > sizeof(buf)){
+    end_op();
     return -1;
+  }
 
   // Read file content into buffer.
-  if (readi(ip, 0, buf, 0, MAXPATH) < 0)
+  if (readi(ip, 1, buf, 0, MAXPATH) < 0){
+    end_op();
     // panic("readlink: readi");
     return -1;
+  }
 
+  end_op();
   return 0;
 }
 
@@ -371,6 +379,75 @@ sys_open(void)
     }
   } else {
     if((ip = namei(path)) == 0){
+      end_op();
+      return -1;
+    }
+    ilock(ip);
+    if(ip->type == T_DIR && omode != O_RDONLY){
+      iunlockput(ip);
+      end_op();
+      return -1;
+    }
+  }
+
+  if(ip->type == T_DEVICE && (ip->major < 0 || ip->major >= NDEV)){
+    iunlockput(ip);
+    end_op();
+    return -1;
+  }
+
+  if((f = filealloc()) == 0 || (fd = fdalloc(f)) < 0){
+    if(f)
+      fileclose(f);
+    iunlockput(ip);
+    end_op();
+    return -1;
+  }
+
+  if(ip->type == T_DEVICE){
+    f->type = FD_DEVICE;
+    f->major = ip->major;
+  } else {
+    f->type = FD_INODE;
+    f->off = 0;
+  }
+  f->ip = ip;
+  f->readable = !(omode & O_WRONLY);
+  f->writable = (omode & O_WRONLY) || (omode & O_RDWR);
+
+  if((omode & O_TRUNC) && ip->type == T_FILE){
+    itrunc(ip);
+  }
+
+  iunlock(ip);
+  end_op();
+
+  return fd;
+}
+
+// Like sys_open, but does not dereference symlink files.
+uint64
+sys_open_no_dereference(void)
+{
+  char path[MAXPATH];
+  int fd, omode;
+  struct file *f;
+  struct inode *ip;
+  int n;
+
+  if((n = argstr(0, path, MAXPATH)) < 0 || argint(1, &omode) < 0)
+    return -1;
+
+  begin_op();
+
+  if(omode & O_CREATE){
+    ip = create(path, T_FILE, 0, 0);
+    if(ip == 0){
+      end_op();
+      return -1;
+    }
+  } else {
+    if((ip = namei2(path)) == 0){
       end_op();
       return -1;
     }

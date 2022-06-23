@@ -1,15 +1,16 @@
 Questions:
     - What does it log, log transaction (filewrite at file.c).
-    - difference between dinode to inode.
-    - Should we add padding to the inode (not only the dinode)? And, did we pad correctly?
-    - What is the difference between 'ref' and 'nlink' in 'struct inode'?
+    - Make sure of the difference between 'ref' and 'nlink' in 'struct inode'.
     - In mkfs.c - do we need to change anything else, other than the size (FSSIZE)?
     - It looks like 'balloc' doesn't respect the file-system order - since it just looks for a free block.. What about the purpose of that block?
-
+    - What should we change in 'unlink'? Seems good.
 
 Todo:
     - Section 2:
-        - ...
+        - Fix 'namex' so it will dereference inside the while-loop, since if a symlink points 
+          to a directory, and we use it inside a path, we want the dereference to happend
+          (doesn't happen now).
+        - Check all functionalities of the functions mentioned in the assignment.
 
 
 Notes:
@@ -27,13 +28,22 @@ Notes:
         - Added the system calls 'symlink' and 'readlink' as described in the assingment.
             ** POSSIBLE PROBLEM: I didn't save the path size (as some references does). I assigned MAXPATH to n (in readi), hoping that 
             if we meet EOF before n, readi just returns. If this is not the case --> Add the length of the path to the data-blocks of the file.
+        - Added namei2 that act like its predecessor, but with no dereferencing.
+        - Added 'count' to the arguments of 'namex', to know how many dereferences we already did.
         - Change chdir, exec, open (and fstat and unlink?) to work with soft (symbolic) links:
+        - Added system-call 'open_no_dereference', which is like 'open', but doesn't dereference symlink files.
             - open: 
-                - (fcntl.h) Add a new flag O_NOFOLLOW in fcntl.h so that we don't follow the symbolic link (good for 'fstat', 'link', 'unlink' etc. 
+                - DEPRECATED (fcntl.h) Add a new flag O_NOFOLLOW in fcntl.h so that we don't follow the symbolic link (good for 'fstat', 'link', 'unlink' etc. 
                 because we don't want to get the file descriptor of the file the symlink points at, but rather the fd of the symlink file itself).
                 - (open) 
+                - (ulib.c) Changed stat to use open2, which does not dereference symlink files.
+                - (ls.c) Changed open to open2, which doesn't dereference symlink files.
             - chdir: 
 
             - exec: 
+        - Changed 'ln.c' user-file in order to respect soft-links as well.
+
+        - Changed 'ls.c' user-file in order to print as requested in the assignment.
+
             
 

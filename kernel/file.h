@@ -29,7 +29,7 @@ struct inode {
   // Changed the number of block in order to store one addition double indirection link
   // uint addrs[NDIRECT+1];
   uint addrs[NDIRECT+2];   // Data block addresses
-  uint padding[PADDING];            // Added in order to make dinode a divisor of a block size
+  // uint padding[PADDING];            // Added in order to make dinode a divisor of a block size
 };
 
 // map major device number to device functions.
