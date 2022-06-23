@@ -688,6 +688,17 @@ namex(char *path, int nameiparent, char *name, int follow, int count)
 
   while((path = skipelem(path, name)) != 0){
     ilock(ip);
+
+    if (follow && (ip->type == T_SYMLINK)){
+      // Check if ip is of type T_SYMLINK. If so --> Dereference (follow) if count < MAX_DEREFERENCE.
+      // printf("count: %d\n", count);
+      if (count >= MAX_DEREFERENCE)
+        return 0;
+      char path2[MAXPATH];
+      readi(ip, 0, (uint64)path2, 0, MAXPATH);
+      ip = namex(path2, nameiparent, name, follow, count+1);
+    }
+
     if(ip->type != T_DIR){
       iunlockput(ip);
       return 0;
@@ -708,15 +719,7 @@ namex(char *path, int nameiparent, char *name, int follow, int count)
     iput(ip);
     return 0;
   }
-  if (!follow || !(ip->type == T_SYMLINK))
-    return ip;
-  // Check if ip is of type T_SYMLINK. If so --> Dereference (follow) if count < MAX_DEREFERENCE.
-  // printf("count: %d\n", count);
-  if (count >= MAX_DEREFERENCE)
-    return 0;
-  char path2[MAXPATH];
-  readi(ip, 0, (uint64)path2, 0, MAXPATH);
-  ip = namex(path2, nameiparent, name, follow, count+1);
+  
   return ip;
 }
 
