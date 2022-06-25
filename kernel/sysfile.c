@@ -200,7 +200,7 @@ sys_symlink(void)
   if (writei(ip_new, 0, (uint64)oldpath, 0, strlen(oldpath)) != strlen(oldpath))
     panic("symlink: writei");
 
-  iunlockput(ip_new);
+  iunlock(ip_new);
   end_op();
   return 0;
 }
@@ -227,14 +227,17 @@ sys_readlink(void)
     end_op();
     return -1;
   }
+  ilock(ip);
 
   // Read file content into buffer.
   if (readi(ip, 1, buf, 0, MAXPATH) < 0){
+    iunlockput(ip);
     end_op();
     // panic("readlink: readi");
     return -1;
   }
 
+  iunlockput(ip);
   end_op();
   return 0;
 }
