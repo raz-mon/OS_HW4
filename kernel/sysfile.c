@@ -196,6 +196,7 @@ sys_symlink(void)
 
   ip_new = create(newpath, T_SYMLINK, 0, 0);
   if (ip_new == 0){
+    // Need iunlockput here?
     end_op();
     return -1;
   }
@@ -203,7 +204,8 @@ sys_symlink(void)
   // Insert 'oldpath' to be the file content.
   if (writei(ip_new, 0, (uint64)oldpath, 0, strlen(oldpath)) != strlen(oldpath))
     panic("symlink: writei");
-  iunlockput(ip_new);
+
+  iunlock(ip_new);
   end_op();
   return 0;
 }
@@ -227,17 +229,19 @@ sys_readlink(void)
 
   // Make sure file exists, and is a symbolic link, and that the size of its contents is <= buf_size.
   if ((ip = namei(pathname)) == 0 || ip->type != T_SYMLINK || ip->size > sizeof(buf)){
+    iput(ip);
     end_op();
     return -1;
   }
-
+  ilock(ip);
   // Read file content into buffer.
   if (readi(ip, 1, buf, 0, MAXPATH) < 0){
+    iunlockput(ip);
     end_op();
     // panic("readlink: readi");
     return -1;
   }
-
+  iunlockput(ip);
   end_op();
   return 0;
 }
@@ -386,7 +390,7 @@ sys_open(void)
       return -1;
     }
     ilock(ip);
-    if(ip->type == T_DIR && omode != O_RDONLY){
+    if(ip->type == T_DIR && (omode != O_RDONLY && omode != O_NOFOLLOW)){
       iunlockput(ip);
       end_op();
       return -1;
@@ -404,14 +408,7 @@ sys_open(void)
     iunlockput(ip);
     end_op();
     return -1;
-  // Addition:
-  if ((ip = deref_sym(ip, omode)) == 0){
-    return -1;
   }
-  // Is this the right place? Think about 15 lines before as well
-  // since ip can point to a path of a directory as well.
-  }
-
 
   if((f = filealloc()) == 0 || (fd = fdalloc(f)) < 0){
     if(f)
