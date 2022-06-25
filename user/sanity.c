@@ -120,7 +120,7 @@ cleanup(void)
 static int
 stat_slink(char *pn, struct stat *st)
 {
-  int fd = open_no_dereference(pn, O_RDONLY);
+  int fd = open(pn, O_RDONLY | O_NOFOLLOW);
   if(fd < 0)
     return -1;
   if(fstat(fd, st) != 0)

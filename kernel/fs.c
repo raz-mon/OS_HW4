@@ -22,7 +22,7 @@
 #include "file.h"
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
-#define MAX_DEREFERENCE 10
+#define MAX_DEREFERENCE 31
 // there should be one superblock per disk device, but we run with
 // only one device
 struct superblock sb; 
@@ -677,7 +677,7 @@ skipelem(char *path, char *name)
 // path element into name, which must have room for DIRSIZ bytes.
 // Must be called inside a transaction since it calls iput().
 static struct inode*
-namex(char *path, int nameiparent, char *name, int follow, int count)
+namex(char *path, int nameiparent, char *name)
 {
   struct inode *ip, *next;
 
@@ -708,15 +708,15 @@ namex(char *path, int nameiparent, char *name, int follow, int count)
     iput(ip);
     return 0;
   }
-  if (!follow || !(ip->type == T_SYMLINK))
-    return ip;
-  // Check if ip is of type T_SYMLINK. If so --> Dereference (follow) if count < MAX_DEREFERENCE.
-  // printf("count: %d\n", count);
-  if (count >= MAX_DEREFERENCE)
-    return 0;
-  char path2[MAXPATH];
-  readi(ip, 0, (uint64)path2, 0, MAXPATH);
-  ip = namex(path2, nameiparent, name, follow, count+1);
+  // if (!follow || !(ip->type == T_SYMLINK))
+  //   return ip;
+  // // Check if ip is of type T_SYMLINK. If so --> Dereference (follow) if count < MAX_DEREFERENCE.
+  // printf("%d\n", count);
+  // if (count >= MAX_DEREFERENCE)
+  //   return 0;
+  // char path2[MAXPATH];
+  // readi(ip, 0, (uint64)path2, 0, MAXPATH);
+  // ip = namex(path2, nameiparent, name, follow, count+1);
   return ip;
 }
 
@@ -724,20 +724,20 @@ struct inode*
 namei(char *path)
 {
   char name[DIRSIZ];
-  return namex(path, 0, name, 1, 0);
+  return namex(path, 0, name);
 }
 
-// Like nameiparent, but not dereferencing symlink files.s
-struct inode*
-namei2(char *path)
-{
-  char name[DIRSIZ];
-  return namex(path, 0, name, 0, 0);
-}
+// // Like nameiparent, but not dereferencing symlink files.s
+// struct inode*
+// namei2(char *path)
+// {
+//   char name[DIRSIZ];
+//   return namex(path, 0, name);
+// }
 
 struct inode*
 nameiparent(char *path, char *name)
 {
-  return namex(path, 1, name, 1, 0);
+  return namex(path, 1, name);
 }
 

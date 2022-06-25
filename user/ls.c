@@ -2,6 +2,7 @@
 #include "kernel/stat.h"
 #include "user/user.h"
 #include "kernel/fs.h"
+#include "kernel/fcntl.h"
 
 #define MAXPATH 128
 
@@ -34,7 +35,7 @@ ls(char *path)
   char new_path[MAXPATH];
 
   // Added: Make sure that here no dereference occurs! Can use different system-call or the O_UNFOLLOW flag.
-  if((fd = open_no_dereference(path, 0)) < 0){
+  if((fd = open(path, O_NOFOLLOW)) < 0){
     fprintf(2, "ls: cannot open %s\n", path);
     return;
   }
