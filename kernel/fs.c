@@ -680,18 +680,22 @@ static struct inode*
 namex(char *path, int nameiparent, char *name, int follow, int count)
 {
   struct inode *ip, *next;
+  char path2[MAXPATH];
+  char name2[DIRSIZ];
+  memset(path2, 0, MAXPATH);
 
   if(*path == '/')
     ip = iget(ROOTDEV, ROOTINO);
   else
-    ip = idup(myproc()->cwd);
+    ip = idup(myproc()->cwd);     //                       d1/d2/a.txt     -->       d2_sym/a.txt
 
   while((path = skipelem(path, name)) != 0){
     ilock(ip);
-    if(ip->type != T_DIR){
+    if(ip->type != T_DIR && ip->type != T_SYMLINK){
       iunlockput(ip);
       return 0;
     }
+    
     if(nameiparent && *path == '\0'){
       // Stop one level early.
       iunlock(ip);
@@ -703,20 +707,28 @@ namex(char *path, int nameiparent, char *name, int follow, int count)
     }
     iunlockput(ip);
     ip = next;
+
+    if (follow && ip->type == T_SYMLINK){
+      memset(path2, 0, MAXPATH);
+      if (count >= MAX_DEREFERENCE)
+        return 0;
+      readi(ip, 0, (uint64)path2, 0, MAXPATH);
+      ip = namex(path2, 0, name2, follow, count+1);
+    }
+
   }
   if(nameiparent){
     iput(ip);
     return 0;
   }
-  if (!follow || !(ip->type == T_SYMLINK))
-    return ip;
-  // Check if ip is of type T_SYMLINK. If so --> Dereference (follow) if count < MAX_DEREFERENCE.
-  // printf("count: %d\n", count);
-  if (count >= MAX_DEREFERENCE)
-    return 0;
-  char path2[MAXPATH];
-  readi(ip, 0, (uint64)path2, 0, MAXPATH);
-  ip = namex(path2, nameiparent, name, follow, count+1);
+
+  // if (follow && ip->type == T_SYMLINK){
+  //   if (count >= MAX_DEREFERENCE)
+  //     return 0;
+  //   readi(ip, 0, (uint64)path2, 0, MAXPATH);
+  //   ip = namex(path2, nameiparent, name, follow, count+1);
+  // }
+
   return ip;
 }
 

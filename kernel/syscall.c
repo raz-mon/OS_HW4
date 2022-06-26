@@ -136,7 +136,7 @@ static uint64 (*syscalls[])(void) = {
 };
 
 void
-syscall(void) 
+syscall(void)
 {
   int num;
   struct proc *p = myproc();
