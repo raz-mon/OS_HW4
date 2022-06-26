@@ -25,7 +25,7 @@ int sleep(int);
 int uptime(void);
 int symlink(const char*, const char*);
 int readlink(const char*, char*, int);
-// int open_no_dereference(const char*, int);
+int open_no_dereference(const char*, int);
 
 // ulib.c
 int stat(const char*, struct stat*);

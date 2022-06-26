@@ -29,10 +29,6 @@ exec(char *path, char **argv)
   }
   ilock(ip);
 
-  if ((deref_sym(ip, 0)) == 0){
-    return -1;
-  }
-
   // Check ELF header
   if(readi(ip, 0, (uint64)&elf, 0, sizeof(elf)) != sizeof(elf))
     goto bad;

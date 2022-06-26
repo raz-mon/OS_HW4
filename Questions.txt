@@ -7,8 +7,9 @@ Questions:
 
 Todo:
     - Section 2:
-        - Fix 'namex'!! Should we do the dereferencing inside the while loop in case the symlink is 
-          of a directory?? I mean, this makes sense and also doesn't make sense.. 
+        - Fix 'namex' so it will dereference inside the while-loop, since if a symlink points 
+          to a directory, and we use it inside a path, we want the dereference to happend
+          (doesn't happen now).
         - Check all functionalities of the functions mentioned in the assignment.
 
 

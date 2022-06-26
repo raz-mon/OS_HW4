@@ -2,7 +2,6 @@
 #include "kernel/stat.h"
 #include "user/user.h"
 #include "kernel/fs.h"
-#include "kernel/fcntl.h"
 
 #define MAXPATH 128
 
@@ -35,7 +34,7 @@ ls(char *path)
   char new_path[MAXPATH];
 
   // Added: Make sure that here no dereference occurs! Can use different system-call or the O_UNFOLLOW flag.
-  if((fd = open(path, O_NOFOLLOW)) < 0){
+  if((fd = open_no_dereference(path, 0)) < 0){
     fprintf(2, "ls: cannot open %s\n", path);
     return;
   }
@@ -49,7 +48,7 @@ ls(char *path)
   switch(st.type){
   // Added:
   case T_SYMLINK:
-    if (readlink(path, new_path, MAXPATH) < 0)
+    if (readlink(path, new_path, MAXPATH) < 0)       // This is wrong! 'path' is the path of the father directory.
       printf("ls: bad symlink\n");
     printf("%s->%s %d %d %l\n", fmtname(path), new_path, st.type, st.ino, st.size);
     break;
@@ -78,14 +77,11 @@ ls(char *path)
       }
       // Add here:
       if (st.type==T_SYMLINK){
-        if (readlink(buf, new_path, MAXPATH) < 0)
+        if (readlink(buf, new_path, MAXPATH) < 0)       // This is wrong!! 'path' is the path of the father!
           printf("ls: readlink\n");
-        char temp[strlen(buf)+strlen(new_path)];
-        strcpy(temp, buf);
-        strcpy(temp+strlen(buf), "->");
-        strcpy(temp+strlen(buf)+2, new_path);
-        strcpy(buf, temp);
+        printf("%s->%s %d %d %d\n", fmtname(buf), new_path, st.type, st.ino, st.size);
       }
+      else
       printf("%s %d %d %d\n", fmtname(buf), st.type, st.ino, st.size);
     }
     break;
