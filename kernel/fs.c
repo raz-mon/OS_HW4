@@ -688,7 +688,7 @@ namex(char *path, int nameiparent, char *name, int follow, int count)
     ip = iget(ROOTDEV, ROOTINO);
   else
     ip = idup(myproc()->cwd);     //                       d1/d2/a.txt     -->       d2_sym/a.txt
-
+ 
   while((path = skipelem(path, name)) != 0){
     ilock(ip);
     if(ip->type != T_DIR && ip->type != T_SYMLINK){
