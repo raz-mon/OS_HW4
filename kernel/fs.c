@@ -243,6 +243,8 @@ iupdate(struct inode *ip)
 static struct inode*
 iget(uint dev, uint inum)
 {
+  // printf("entered iget\n");
+
   struct inode *ip, *empty;
 
   acquire(&itable.lock);
@@ -270,6 +272,7 @@ iget(uint dev, uint inum)
   ip->valid = 0;
   release(&itable.lock);
 
+  // printf("exit iget\n");
   return ip;
 }
 
@@ -278,9 +281,13 @@ iget(uint dev, uint inum)
 struct inode*
 idup(struct inode *ip)
 {
+  // printf("entered idup\n");
+
   acquire(&itable.lock);
   ip->ref++;
   release(&itable.lock);
+
+  // printf("exit idup\n");
   return ip;
 }
 
@@ -333,6 +340,8 @@ iunlock(struct inode *ip)
 void
 iput(struct inode *ip)
 {
+  // printf("entered iput\n");
+
   acquire(&itable.lock);
 
   if(ip->ref == 1 && ip->valid && ip->nlink == 0){
@@ -356,6 +365,8 @@ iput(struct inode *ip)
 
   ip->ref--;
   release(&itable.lock);
+
+  // printf("exit iput\n");
 }
 
 // Common idiom: unlock, then put.

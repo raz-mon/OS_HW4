@@ -1,11 +1,3 @@
-<<<<<<< HEAD
-{
-    "files.associations": {
-        "types.h": "c",
-        "riscv.h": "c",
-        "defs.h": "c",
-    },
-=======
 {
     "files.associations": {
         "types.h": "c",
@@ -27,5 +19,4 @@
         "cstdint": "c",
         "typeinfo": "c"
     },
->>>>>>> 1a2348da2425dbd7d704441efb14fc2685e14760
 }
