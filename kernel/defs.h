@@ -49,7 +49,7 @@ void            iupdate(struct inode*);
 int             namecmp(const char*, const char*);
 struct inode*   namei(char*);
 // Added:
-// struct inode*   namei2(char*);
+struct inode*   namei2(char*);
 // End addition.
 struct inode*   nameiparent(char*, char*);
 int             readi(struct inode*, int, uint64, uint, uint);
@@ -58,7 +58,6 @@ int             writei(struct inode*, int, uint64, uint, uint);
 void            itrunc(struct inode*);
 int             symlink(const char *, const char *);
 int             readlink(const char *, char * buf, int bufsize);
-struct inode*   deref_sym(struct inode*, int);
 
 
 // ramdisk.c

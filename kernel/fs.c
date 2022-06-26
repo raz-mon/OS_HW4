@@ -22,7 +22,7 @@
 #include "file.h"
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
-#define MAX_DEREFERENCE 31
+#define MAX_DEREFERENCE 10
 // there should be one superblock per disk device, but we run with
 // only one device
 struct superblock sb; 
@@ -243,8 +243,6 @@ iupdate(struct inode *ip)
 static struct inode*
 iget(uint dev, uint inum)
 {
-  // printf("entered iget\n");
-
   struct inode *ip, *empty;
 
   acquire(&itable.lock);
@@ -272,7 +270,6 @@ iget(uint dev, uint inum)
   ip->valid = 0;
   release(&itable.lock);
 
-  // printf("exit iget\n");
   return ip;
 }
 
@@ -281,13 +278,9 @@ iget(uint dev, uint inum)
 struct inode*
 idup(struct inode *ip)
 {
-  // printf("entered idup\n");
-
   acquire(&itable.lock);
   ip->ref++;
   release(&itable.lock);
-
-  // printf("exit idup\n");
   return ip;
 }
 
@@ -340,8 +333,6 @@ iunlock(struct inode *ip)
 void
 iput(struct inode *ip)
 {
-  // printf("entered iput\n");
-
   acquire(&itable.lock);
 
   if(ip->ref == 1 && ip->valid && ip->nlink == 0){
@@ -365,8 +356,6 @@ iput(struct inode *ip)
 
   ip->ref--;
   release(&itable.lock);
-
-  // printf("exit iput\n");
 }
 
 // Common idiom: unlock, then put.
@@ -688,7 +677,7 @@ skipelem(char *path, char *name)
 // path element into name, which must have room for DIRSIZ bytes.
 // Must be called inside a transaction since it calls iput().
 static struct inode*
-namex(char *path, int nameiparent, char *name)
+namex(char *path, int nameiparent, char *name, int follow, int count)
 {
   struct inode *ip, *next;
 
@@ -719,15 +708,15 @@ namex(char *path, int nameiparent, char *name)
     iput(ip);
     return 0;
   }
-  // if (!follow || !(ip->type == T_SYMLINK))
-  //   return ip;
-  // // Check if ip is of type T_SYMLINK. If so --> Dereference (follow) if count < MAX_DEREFERENCE.
-  // printf("%d\n", count);
-  // if (count >= MAX_DEREFERENCE)
-  //   return 0;
-  // char path2[MAXPATH];
-  // readi(ip, 0, (uint64)path2, 0, MAXPATH);
-  // ip = namex(path2, nameiparent, name, follow, count+1);
+  if (!follow || !(ip->type == T_SYMLINK))
+    return ip;
+  // Check if ip is of type T_SYMLINK. If so --> Dereference (follow) if count < MAX_DEREFERENCE.
+  // printf("count: %d\n", count);
+  if (count >= MAX_DEREFERENCE)
+    return 0;
+  char path2[MAXPATH];
+  readi(ip, 0, (uint64)path2, 0, MAXPATH);
+  ip = namex(path2, nameiparent, name, follow, count+1);
   return ip;
 }
 
@@ -735,20 +724,20 @@ struct inode*
 namei(char *path)
 {
   char name[DIRSIZ];
-  return namex(path, 0, name);
+  return namex(path, 0, name, 1, 0);
 }
 
-// // Like nameiparent, but not dereferencing symlink files.s
-// struct inode*
-// namei2(char *path)
-// {
-//   char name[DIRSIZ];
-//   return namex(path, 0, name);
-// }
+// Like nameiparent, but not dereferencing symlink files.s
+struct inode*
+namei2(char *path)
+{
+  char name[DIRSIZ];
+  return namex(path, 0, name, 0, 0);
+}
 
 struct inode*
 nameiparent(char *path, char *name)
 {
-  return namex(path, 1, name);
+  return namex(path, 1, name, 1, 0);
 }
 
