@@ -50,7 +50,13 @@ ls(char *path)
   case T_SYMLINK:
     if (readlink(path, new_path, MAXPATH) < 0)       // This is wrong! 'path' is the path of the father directory.
       printf("ls: bad symlink\n");
-    printf("%s->%s %d %d %l\n", fmtname(path), new_path, st.type, st.ino, st.size);
+    char temp1[MAXPATH];
+    memset(temp1,0,MAXPATH);
+    strcpy(temp1, path);
+    strcpy(temp1+strlen(path), "->");
+    strcpy(temp1+strlen(path)+2, new_path);
+    // strcpy(buf, temp);
+    printf("%s %d %d %l\n", fmtname(temp1), new_path, st.type, st.ino, st.size);
     break;
   // End of addition.
 
@@ -77,11 +83,19 @@ ls(char *path)
       }
       // Add here:
       if (st.type==T_SYMLINK){
-        if (readlink(buf, new_path, MAXPATH) < 0)       // This is wrong!! 'path' is the path of the father!
+        if (readlink(buf, new_path, MAXPATH) < 0)
           printf("ls: readlink\n");
-        printf("%s->%s %d %d %d\n", fmtname(buf), new_path, st.type, st.ino, st.size);
+        char temp2[strlen(buf)+strlen(new_path)];
+        strcpy(temp2, buf);
+        strcpy(temp2+strlen(buf), "->");
+        strcpy(temp2+strlen(buf)+2, new_path);
+        strcpy(buf, temp2);
       }
-      else
+      // if (st.type==T_SYMLINK){
+      //   if (readlink(buf, new_path, MAXPATH) < 0)       // This is wrong!! 'path' is the path of the father!
+      //     printf("ls: readlink\n");
+      //   printf("%s->%s %d %d %d\n", fmtname(buf), new_path, st.type, st.ino, st.size);
+      // }
       printf("%s %d %d %d\n", fmtname(buf), st.type, st.ino, st.size);
     }
     break;
