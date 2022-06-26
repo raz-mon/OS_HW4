@@ -80,10 +80,13 @@ ls(char *path)
       if (st.type==T_SYMLINK){
         if (readlink(buf, new_path, MAXPATH) < 0)
           printf("ls: readlink\n");
-        printf("%s->%s %d %d %d\n", fmtname(buf), new_path, st.type, st.ino, st.size);
+        char temp[strlen(buf)+strlen(new_path)];
+        strcpy(temp, buf);
+        strcpy(temp+strlen(buf), "->");
+        strcpy(temp+strlen(buf)+2, new_path);
+        strcpy(buf, temp);
       }
-      else
-        printf("%s %d %d %d\n", fmtname(buf), st.type, st.ino, st.size);
+      printf("%s %d %d %d\n", fmtname(buf), st.type, st.ino, st.size);
     }
     break;
   }
