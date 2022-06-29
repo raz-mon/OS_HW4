@@ -17,7 +17,6 @@
         "limits": "c",
         "*.tcc": "c",
         "cstdint": "c",
-        "typeinfo": "c",
-        "stat.h": "c"
+        "typeinfo": "c"
     },
 }
